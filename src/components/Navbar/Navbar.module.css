@@ -1,0 +1,29 @@
+.navbar {
+    background: #effaf0 ;
+    padding: 1rem 2rem;
+    width: 100%;
+    box-sizing: border-box; 
+}
+
+.navbar ul {
+    display: flex;
+    flex-direction: row;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.title {
+    margin-right: auto;
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.navbar a, .navbar button {
+    margin-left: 1rem;
+}
+
+.navbar a {
+    color: #333;
+    text-decoration: none;
+}
