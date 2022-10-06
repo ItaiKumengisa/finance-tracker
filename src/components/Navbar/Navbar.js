@@ -1,7 +1,10 @@
 import classes from './Navbar.module.css';
 import {Link} from 'react-router-dom';
+import { useLogout } from '../../hooks/useLogout';
 
 const Navbar = () => {
+const {logOut} = useLogout();
+    console.log("logout fnuction: ", logOut)
     return (
         <nav className={classes.navbar}>
             <ul>
@@ -12,7 +15,9 @@ const Navbar = () => {
                 <li>
                     <Link to="/signup">Sign up</Link>
                 </li>
-                <li></li>
+                <li>
+                    <button className='btn' onClick={() => {logOut()}}>Logout</button>
+                </li>
             </ul>
         </nav>
     )

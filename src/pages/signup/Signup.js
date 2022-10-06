@@ -12,7 +12,6 @@ const Signup = () => {
     const sumbitHandler = (event) => {
         event.preventDefault();
         signup(email, password, displayName);
-
     }
 
     return (

@@ -1,5 +1,9 @@
 import { createContext, useReducer } from "react";
 
+export const AUTH_CONTEXT_ACTIONS = {
+    LOGIN: 'LOGIN',
+    LOGOUT: 'LOGOUT'
+}
 
 /* 
     Reacts createContext method, creates a new context that we'll use to hold the 
@@ -7,7 +11,11 @@ import { createContext, useReducer } from "react";
 
     We also export this context, I actually don't know why we're doing this when it looks like 
     we'll just be creating the context provider component in this same file ( be sure to export 
-        that for sure though)
+    that for sure though)
+    
+    Just found out that we'll be exporting the context because we can use it to create a custom
+    hook that interacts with the context on behalf of the components we use it in which will need
+    this to specify the context in the React.createContext() method
 */
 export const AuthContext = createContext();
 
@@ -23,11 +31,16 @@ export const AuthContext = createContext();
 
 export const authReducer = (state, action) => {
     switch(action.type){
+        case AUTH_CONTEXT_ACTIONS.LOGIN:
+            console.log('authReducer login called')
+            return { ...state, user: action.payload }
+        case AUTH_CONTEXT_ACTIONS.LOGOUT:
+            console.log('authReducer logout called')
+            return { ...state, user: null }
 
         default:
             return state;
     }
-
 }
 
 /* 
@@ -51,15 +64,11 @@ const AuthContextProvider = ({ children }) => {
         user: null,
     });
 
+    console.log("AuthContext State: ", state)
+
+    
 
     return (
-        /* 
-            The "value" attribute of the context provider is what will be exposed to the components that 
-            make use of the provider. We want to expose the state obviously but we can also expose the dispatch 
-            method used to manipulate state as well by passing it in an object to the value attribute. We can later
-            use this dispatch method when we want to creeate some custom hooks to manipulate the context
-
-        */
         <AuthContext.Provider value={{...state, dispatch}}>
             {children}
         </AuthContext.Provider>

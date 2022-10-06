@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { projectAuth } from '../firebase/confing';
-
+import useAuthContext from './useAuthContext';
+import { AUTH_CONTEXT_ACTIONS } from '../context/AuthContext';
 
 //We are going to use this hook to keep track of the state of the login process: error, pending, etc...
 //We'll also expose a w=method for signing up
+
+/* 
+    This hook uses an asynchronous method where need to await. So far we've seen that when we try to update state
+    on an unmounted component we get an error thrown. We saw this with the fetch and we used abort control to handle
+    that. Here we are using firebases service that is async and we can't handle the problem of updating state on an
+    unmounted component with Abortcontroller here. We'll take a more manual approach
+*/
+
 export const useSignup = () => {
     const [error, setError] = useState(null);
     const [isPending, setIsPending] = useState(false);
+    const { dispatch } = useAuthContext();
+    const [isCancelled, setIsCancelled] = useState(false);
 
     const signup = async (email, password, displayName) => {
         //How will we use these things to create a user with firebase
@@ -42,7 +53,7 @@ export const useSignup = () => {
 
             const response = await projectAuth.createUserWithEmailAndPassword(email, password);
 
-            if(!response){
+            if (!response) {
                 throw new Error("Could not complete signup")
             }
 
@@ -54,14 +65,23 @@ export const useSignup = () => {
             console.log(response.user)
 
             //add a display name to a user after creation
+            //Here firebase knows that we're logged in
+            await response.user.updateProfile({ displayName: displayName });
 
-            await response.user.updateProfile({displayName: displayName});
+            //Now we want to use the user returned from firebase signup to update the context with that 
+            //current user. We do this by sending that in the action as the payload.
 
-            //At this point we set isPending to false
 
-            setIsPending(false);
-            setError(null);
             
+            //Here we let our react aplication know that we're logged in
+            dispatch({ type: AUTH_CONTEXT_ACTIONS.LOGIN, payload: response.user })
+            
+            if (!isCancelled) {
+                //At this point we set isPending to false
+                setIsPending(false);
+                setError(null);
+            }
+
 
         } catch (err) {
             /* 
@@ -71,10 +91,22 @@ export const useSignup = () => {
                 error we also are not pending anymore so we can set the isPending state to false
             */
             console.log("Made it to the catch: ", err.message);
-            setError(err.message);
-            setIsPending(false);
+
+            //We want to avoid updating state if the asynchronous method tries to update the state while the component is 
+            //unmounted
+            if(!isCancelled){
+                setError(err.message);
+                setIsPending(false);
+            }
         }
     }
+
+    /* When this component unmounts, the useEffect's  */
+    useEffect(() => {
+        return () => {
+            setIsCancelled(true)
+        }
+    }, [])
 
     return {
         error,
