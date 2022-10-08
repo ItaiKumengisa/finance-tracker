@@ -1,7 +1,8 @@
 import { projectAuth } from "../firebase/confing";
 import { useState, useEffect } from 'react';
-import { useAuthContext } from './useAuthContext';
+import useAuthContext from './useAuthContext';
 import { AUTH_CONTEXT_ACTIONS } from "../context/AuthContext";
+
 const useLogin = () => {
     const [error, setError] = useState(null);
     const [isPending, setIsPending] = useState(false);
@@ -29,6 +30,7 @@ const useLogin = () => {
               that, we need to use the useAuthContext hook
             */
 
+
             dispatch({ type: AUTH_CONTEXT_ACTIONS.LOGIN, payload: userCreds.user })
 
             if (!isCancelled) {
@@ -53,7 +55,7 @@ const useLogin = () => {
         }
     }, [])
 
-    return {logout, error, isPending}
+    return { login, error, isPending }
 }
 
 export default useLogin;

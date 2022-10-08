@@ -1,8 +1,10 @@
-import { createContext, useReducer } from "react";
+import { createContext, useEffect, useReducer } from "react";
+import { projectAuth } from "../firebase/confing";
 
 export const AUTH_CONTEXT_ACTIONS = {
     LOGIN: 'LOGIN',
-    LOGOUT: 'LOGOUT'
+    LOGOUT: 'LOGOUT',
+    AUTH_IS_READY: 'AUTH_IS_READY'
 }
 
 /* 
@@ -30,13 +32,16 @@ export const AuthContext = createContext();
 
 
 export const authReducer = (state, action) => {
-    switch(action.type){
+    switch (action.type) {
         case AUTH_CONTEXT_ACTIONS.LOGIN:
             console.log('authReducer login called')
             return { ...state, user: action.payload }
         case AUTH_CONTEXT_ACTIONS.LOGOUT:
             console.log('authReducer logout called')
             return { ...state, user: null }
+        case AUTH_CONTEXT_ACTIONS.AUTH_IS_READY:
+            console.log('authReducer auth is ready called')
+            return { ...state, user: action.payload, authIsReady: true }
 
         default:
             return state;
@@ -60,16 +65,47 @@ const AuthContextProvider = ({ children }) => {
         to send an action to the reducer method 
     */
 
+
+    /* 
+        Here we add a new property to our initial state called authIsReady and we set it to false. We'll
+        use it in our app.js component to say don't show any of the appllication tree unless the auth
+        state has been retrieved. The goal is to communicate with firebase: ask if we have a user signed in ->
+        we do? Then we updated the auth context with the new user. We don't -> Then we set the user to null. And 
+        also turn the authIsReady property to true
+    */
     const [state, dispatch] = useReducer(authReducer, {
         user: null,
+        authIsReady: false
     });
 
     console.log("AuthContext State: ", state)
 
-    
+    /* 
+        When the component is first evaluated, we want to do our check. useEffect empty dependency array
+
+        We use the "onAuthStateChange" method to have firebase let us know whenever the authentication state 
+        changes. This function fires as soon as we connect to firebase as well as everytime the authentication
+        state changes 
+
+        When this function goes off for the first time, we are then confronted with the answer to our question,
+        "is a user signed in or not?"
+    */
+
+
+    /* 
+        We only need to do this at the first mounting of the authcontext, afterwards we don't need this useEffect
+        to handle what happens when the authentication state changes. How do we only get it to run the one time?
+    */
+   useEffect(() => {
+       const unSub = projectAuth.onAuthStateChanged((user) => {
+            dispatch({type: AUTH_CONTEXT_ACTIONS.AUTH_IS_READY, payload: user})
+            unSub();
+        })
+
+    }, [])
 
     return (
-        <AuthContext.Provider value={{...state, dispatch}}>
+        <AuthContext.Provider value={{ ...state, dispatch }}>
             {children}
         </AuthContext.Provider>
     );

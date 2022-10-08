@@ -1,5 +1,6 @@
 import React from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { useEffect} from 'react';
 
 const useAuthContext = () => {
 
@@ -16,7 +17,7 @@ const useAuthContext = () => {
     if(!authContext){
         throw new Error("You don't have access to the auth context")
     }
-    console.log("This is the current user",authContext.user)
+
     return authContext;
 }
 

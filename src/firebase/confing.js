@@ -22,4 +22,8 @@ const projectFirestore = firebase.firestore(app);
 //firebase authentication: used to sign users out or log them in/out
 
 const projectAuth = firebase.auth();
-export {projectFirestore, projectAuth};
+
+//timestamp
+
+const timeStamp = firebase.firestore.Timestamp
+export {projectFirestore, projectAuth, timeStamp};
